@@ -30,7 +30,7 @@ const throttle = async ({
     const running_tasks: Promise<void>[] = [];
     let index = 0;
 
-    async function runNextWorload(worker: number): Promise<void> {
+    async function runNextWorkload(worker: number): Promise<void> {
         const curr_index = index++;
         const task = tasks[curr_index];
         if (task) {
@@ -41,13 +41,13 @@ const throttle = async ({
             );
             const result = await task(); // run the task
             results[curr_index] = result;
-            await runNextWorload(worker); // worker is free, run next task recursively...
+            await runNextWorkload(worker); // worker is free, run next task recursively...
         }
     }
 
     // managing workers
     while (running_tasks.length < workers && index < tasks.length) {
-        running_tasks.push(runNextWorload(running_tasks.length + 1));
+        running_tasks.push(runNextWorkload(running_tasks.length + 1));
     }
 
     // waiting for all tasks to complete before returning...

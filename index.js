@@ -22,7 +22,7 @@ const throttle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workers, t
     const results = [];
     const running_tasks = [];
     let index = 0;
-    function runNextWorload(worker) {
+    function runNextWorkload(worker) {
         return __awaiter(this, void 0, void 0, function* () {
             const curr_index = index++;
             const task = tasks[curr_index];
@@ -30,13 +30,13 @@ const throttle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workers, t
                 console.info('worker %d is running task %d', worker, curr_index + 1);
                 const result = yield task(); // run the task
                 results[curr_index] = result;
-                yield runNextWorload(worker); // worker is free, run next task recursively...
+                yield runNextWorkload(worker); // worker is free, run next task recursively...
             }
         });
     }
     // managing workers
     while (running_tasks.length < workers && index < tasks.length) {
-        running_tasks.push(runNextWorload(running_tasks.length + 1));
+        running_tasks.push(runNextWorkload(running_tasks.length + 1));
     }
     // waiting for all tasks to complete before returning...
     yield Promise.all(running_tasks);
