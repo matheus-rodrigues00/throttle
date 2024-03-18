@@ -40,14 +40,11 @@ const runNextWorkload = (state, tasks, worker) => __awaiter(void 0, void 0, void
         });
     }
     if (task) {
-        console.info('worker %d is running task %d', worker, curr_index + 1);
-        const result = yield task(); // run the task
+        const result = yield task();
         workers_hashmap.get(worker).tasks.push(curr_index);
-        // also add the time it took to the total time of the worker
         workers_hashmap.get(worker).total_time += result;
-        // first check if it exists, if not, create it
         state.results[curr_index] = result;
-        yield runNextWorkload(state, tasks, worker); // worker is free, run next task recursively...
+        yield runNextWorkload(state, tasks, worker);
     }
 });
 const throttle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workers, tasks, }) {
@@ -56,11 +53,9 @@ const throttle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workers, t
         running_tasks: [],
         index: 0,
     };
-    // managing workers
     while (state.running_tasks.length < workers && state.index < tasks.length) {
         state.running_tasks.push(runNextWorkload(state, tasks, state.running_tasks.length + 1));
     }
-    // waiting for all tasks to complete before returning...
     yield Promise.all(state.running_tasks);
     return state.results;
 });
