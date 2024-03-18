@@ -1,15 +1,15 @@
 import debug from 'debug';
 
-interface ThrottleOptions {
+interface IThrottleOptions {
     workers: number;
-    tasks: Task[];
+    tasks: ITask[];
 }
 
-interface Task {
+interface ITask {
     (): Promise<number>;
 }
 
-interface State {
+interface IState {
     results: number[];
     running_tasks: Promise<void>[];
     index: number;
@@ -20,8 +20,8 @@ const logger = debug('core');
 const delays: number[] = [...Array(50)].map(
     () => Math.floor(Math.random() * 900) + 100
 );
-const load: Task[] = delays.map(
-    (delay: number): Task =>
+const load: ITask[] = delays.map(
+    (delay: number): ITask =>
         (): Promise<number> =>
             new Promise((resolve) => {
                 setTimeout(() => resolve(Math.floor(delay / 100)), delay);
@@ -29,8 +29,8 @@ const load: Task[] = delays.map(
 );
 
 const runNextWorkload = async (
-    state: State,
-    tasks: Task[],
+    state: IState,
+    tasks: ITask[],
     worker: number
 ): Promise<void> => {
     const curr_index = state.index++;
@@ -46,8 +46,8 @@ const runNextWorkload = async (
 const throttle = async ({
     workers,
     tasks,
-}: ThrottleOptions): Promise<number[]> => {
-    const state: State = {
+}: IThrottleOptions): Promise<number[]> => {
+    const state: IState = {
         results: [],
         running_tasks: [],
         index: 0,
