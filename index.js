@@ -18,13 +18,14 @@ const delays = [...Array(50)].map(() => Math.floor(Math.random() * 900) + 100);
 const load = delays.map((delay) => () => new Promise((resolve) => {
     setTimeout(() => resolve(Math.floor(delay / 100)), delay);
 }));
-const throttle = (workers, tasks) => __awaiter(void 0, void 0, void 0, function* () {
+const throttle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workers, tasks, }) {
     // implemente aqui
+    return [];
 });
 const bootstrap = () => __awaiter(void 0, void 0, void 0, function* () {
     logger('Starting...');
     const start = Date.now();
-    const answers = yield throttle(5, load);
+    const answers = yield throttle({ workers: 5, tasks: load });
     logger('Done in %dms', Date.now() - start);
     logger('Answers: %O', answers);
 });
