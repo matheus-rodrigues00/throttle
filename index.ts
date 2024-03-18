@@ -26,8 +26,36 @@ const throttle = async ({
     workers,
     tasks,
 }: ThrottleOptions): Promise<number[]> => {
-    // implemente aqui
-    return [];
+    const results: number[] = [];
+    const running_tasks: Promise<void>[] = [];
+    let index = 0;
+
+    async function runNextWorload(worker: number): Promise<void> {
+        const curr_index = index++;
+        const task = tasks[curr_index];
+        if (task) {
+            console.info(
+                'worker %d is running task %d',
+                worker,
+                curr_index + 1
+            );
+            const result = await task(); // run the task
+            results[curr_index] = result;
+            await runNextWorload(worker); // worker is free, run next task recursively...
+        }
+    }
+
+    // managing workers
+    while (running_tasks.length < workers && index < tasks.length) {
+        running_tasks.push(runNextWorload(running_tasks.length + 1));
+    }
+
+    // waiting for all tasks to complete before returning...
+    await Promise.all(running_tasks);
+
+    console.info('tasks finished!');
+
+    return results;
 };
 
 const bootstrap = async (): Promise<void> => {

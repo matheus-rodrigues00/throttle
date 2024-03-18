@@ -19,8 +19,29 @@ const load = delays.map((delay) => () => new Promise((resolve) => {
     setTimeout(() => resolve(Math.floor(delay / 100)), delay);
 }));
 const throttle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workers, tasks, }) {
-    // implemente aqui
-    return [];
+    const results = [];
+    const running_tasks = [];
+    let index = 0;
+    function runNextWorload(worker) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const curr_index = index++;
+            const task = tasks[curr_index];
+            if (task) {
+                console.info('worker %d is running task %d', worker, curr_index + 1);
+                const result = yield task(); // run the task
+                results[curr_index] = result;
+                yield runNextWorload(worker); // worker is free, run next task recursively...
+            }
+        });
+    }
+    // managing workers
+    while (running_tasks.length < workers && index < tasks.length) {
+        running_tasks.push(runNextWorload(running_tasks.length + 1));
+    }
+    // waiting for all tasks to complete before returning...
+    yield Promise.all(running_tasks);
+    console.info('tasks finished!');
+    return results;
 });
 const bootstrap = () => __awaiter(void 0, void 0, void 0, function* () {
     logger('Starting...');
