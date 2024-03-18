@@ -18,30 +18,30 @@ const delays = [...Array(50)].map(() => Math.floor(Math.random() * 900) + 100);
 const load = delays.map((delay) => () => new Promise((resolve) => {
     setTimeout(() => resolve(Math.floor(delay / 100)), delay);
 }));
-const throttle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workers, tasks, }) {
-    const results = [];
-    const running_tasks = [];
-    let index = 0;
-    function runNextWorkload(worker) {
-        return __awaiter(this, void 0, void 0, function* () {
-            const curr_index = index++;
-            const task = tasks[curr_index];
-            if (task) {
-                console.info('worker %d is running task %d', worker, curr_index + 1);
-                const result = yield task(); // run the task
-                results[curr_index] = result;
-                yield runNextWorkload(worker); // worker is free, run next task recursively...
-            }
-        });
+const runNextWorkload = (state, tasks, worker) => __awaiter(void 0, void 0, void 0, function* () {
+    const curr_index = state.index++;
+    const task = tasks[curr_index];
+    if (task) {
+        console.info('worker %d is running task %d', worker, curr_index + 1);
+        const result = yield task(); // run the task
+        state.results[curr_index] = result;
+        yield runNextWorkload(state, tasks, worker); // worker is free, run next task recursively...
     }
+});
+const throttle = (_a) => __awaiter(void 0, [_a], void 0, function* ({ workers, tasks, }) {
+    const state = {
+        results: [],
+        running_tasks: [],
+        index: 0,
+    };
     // managing workers
-    while (running_tasks.length < workers && index < tasks.length) {
-        running_tasks.push(runNextWorkload(running_tasks.length + 1));
+    while (state.running_tasks.length < workers && state.index < tasks.length) {
+        state.running_tasks.push(runNextWorkload(state, tasks, state.running_tasks.length + 1));
     }
     // waiting for all tasks to complete before returning...
-    yield Promise.all(running_tasks);
+    yield Promise.all(state.running_tasks);
     console.info('tasks finished!');
-    return results;
+    return state.results;
 });
 const bootstrap = () => __awaiter(void 0, void 0, void 0, function* () {
     logger('Starting...');
